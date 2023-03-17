@@ -48,7 +48,7 @@ public:
 /*#####################################################*/
 
 void qsystem::hamBuild(void){
-
+	ham.zeros();
 	for(int i=0;i<L-1;++i){
 		ham(i,i) = ham(i,i) -  mu;
 		ham(i,i+1) = ham(i,i+1) - 1.;
@@ -95,7 +95,7 @@ void qsystem::spectrum(void) {
 		eig_sym(eigval, eigvec, ham);
 		//eigs_gen(eigval, eigvec, ham, 1, "sr");
 		for(int i=0; i<L; ++i)
-			omega(i) = eigval(i+L);
+			omega(i) = eigval(i);
 		//gr_state = gr_state / norm(gr_state);
 		ham = eigvec; //trans(eigvec);
 		//std::cout  << eigvec(1,3) <<"8gsgsgs\n" ;
@@ -103,12 +103,13 @@ void qsystem::spectrum(void) {
 }
 
 void qsystem::corrMatrix(void){
+	corr.zeros();
 	if (Temper == 0.)
 		for(int k=0; k<L; ++k)
 			fdist(k) = 0.;
 	else
 		for(int k=0; k<L; ++k)
-			fdist(k) = 1./(1. + exp(omega(k)/Temper));
+			fdist(k) = 1./(1. + exp(-omega(k)/Temper));
 
 	cx_dmat temp(2*L,2*L);
 	for(int i=0; i<2*L; ++i)
