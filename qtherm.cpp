@@ -9,7 +9,7 @@ int main(int argc, char *argv[]){
 	double Temperature(1.*std::pow(Lsize, ZETA));
 	double pbc(0.), tmax(5.*Lsize), dtime(0.02);
 
-	int point(Lsize/2), events;
+	int point(2), events;
 	double kappai(0.), kappa(1.), eta(0.);
 
 	std::string lineterm= "";
@@ -34,10 +34,13 @@ int main(int argc, char *argv[]){
 					else			Temperature = atof( &argv[1][1]);
 				break;
 			case 'e':
-					events = atoi( &argv[1][1] );
+					eta = atof( &argv[1][1] );
 				break;
 			case 'p':
 					pbc = atof( &argv[1][1] );
+				break;
+			case 'y':
+					point = atoi( &argv[1][1] );
 				break;
 			case 'k':
 					if(argv[1][1] == 'i')	kappai= atof( &argv[1][2] );
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]){
 
 	//###data###data###data###data###data###data###data###data###data##
 	char output[80];
-	std::sprintf(output, "data/temp.dat");//qthk%.0fq%.0fe%.0fl%d.dat", kappai, kappa, eta, Lsize);
+	std::sprintf(output, "data/qthk%.0fq%.0fe%.0fl%d.dat", kappai, kappa, eta, Lsize);
 	std::ofstream out_file(output, std::ios::out | std::ios::trunc);
 	out_file.precision(12);
 	std::cout.precision(16);
@@ -72,7 +75,7 @@ int main(int argc, char *argv[]){
 	//###initial##condition###initial##condition###initial##condition##
 	tmax = 5.*Lsize;
 	events =  int(tmax/dtime);
-	point = int(Lsize/2);
+	//point = int(Lsize/point);
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
 	if(eta != 0.) Temperature = eta * std::pow(Lsize, -ZETA);
 	//###initial##condition###initial##condition###initial##condition##
@@ -85,16 +88,23 @@ int main(int argc, char *argv[]){
 
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
 	out_file << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
-	out_file << "# t		LC(x,y)		P(x,y)		D(y)" << "\n";
+	out_file << "# t/L		LC(x,y)		LP(x,y)		D" << "\n";
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
 
 	//###quench###quench###quench###quench###quench###quench###quench##
 	mu = kappa * std::pow(Lsize, -YMU) + MUC;
 	//###quench###quench###quench###quench###quench###quench###quench##
 
+/*
 	// * EQUILIBRIUM SCALING
-	for(int hindex=0; hindex<50; ++hindex){
-		mu = (kappa + hindex*0.1 )/ std::pow(Lsize, YMU) + MUC;
+	//##equilibrium##equilibrium##equilibrium##equilibrium#equilibrium#
+	std::cout << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
+	std::cout << "# L	k	eta	LC(x,y)		LP(x,y)		1-2D/L" << "\n";
+	for(int hindex=0; hindex<100; ++hindex){
+
+		if ( hindex % (100/20) == 0)
+			std::cout << std::flush;
+		mu = (kappa + hindex*0.2 )/ std::pow(Lsize, YMU) + MUC;
 
 		class qsystem KC(Lsize, pbc, Temperature);
 
@@ -105,12 +115,14 @@ int main(int argc, char *argv[]){
 		double dens(0.);
 		for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
 
-		std::cout << Lsize << "	" << mu << "	" << eta << "	" << real(double(Lsize)*(KC.corr(0, point) + KC.corr(point, 0))) << "		" <<  2.*real(KC.corr(point+Lsize, 0+Lsize)) << "		" << 1-2*dens/double(Lsize) << '\n';
+		std::cout << Lsize << "	" << kappa + hindex*0.2 << "	" << eta << "	" << real(double(Lsize)*(KC.corr(0, point) + KC.corr(point, 0))) << "		" << double(Lsize)*2.*real(KC.corr(point+Lsize, 0+Lsize)) << "		" << 1-2*dens/double(Lsize) << '\n';
 	}
+	//##equilibrium##equilibrium##equilibrium##equilibrium#equilibrium#
+*/
 
-
-/*
 	//###time###Evolution###time###Evolution###time###Evolution##time##
+	int xx = int(Lsize/2 - Lsize/2/point) - 1;
+	int yy = int(Lsize/2 + Lsize/2/point) - 1;
 	for(int i=0; i<events; ++i){
 
 		if ( i % (events/20) == 0)
@@ -121,13 +133,10 @@ int main(int argc, char *argv[]){
 		double dens(0.);
 		for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
 
-		out_file << KC.time << "		" << double(Lsize)*real(KC.corr(0, point) + KC.corr(point, 0)) << "		" <<  2.*real(KC.corr(point+Lsize, 0+Lsize)) << "		" << dens << '\n';
+		out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << "		" << dens << '\n';
 
 	}
-
 	//###time###Evolution###time###Evolution###time###Evolution##time##
-*/
-
 
 
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
