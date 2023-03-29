@@ -1,5 +1,4 @@
-#include "qsystem.hpp"
-#include <chrono>
+#include "include/all.h"
 
 
 
@@ -29,6 +28,9 @@ int main(int argc, char *argv[]){
 					if(argv[1][1] == 'M')	tmax = atof( &argv[1][2] );
 					else					dtime = atof( &argv[1][1] );
 				break;
+			case 'g':
+					dgamma = atof( &argv[1][1]);
+				break;
 			case 'T':
 					if(argv[1][1] == 'z')	eta = atof( &argv[1][2] );
 					else			Temperature = atof( &argv[1][1]);
@@ -48,7 +50,7 @@ int main(int argc, char *argv[]){
 				break;
 			default:
 				std::cerr << "Unlucky: Retry input values\n";
-				std::cerr << " L - size \n m - mu\n t - delta time\n tM - time max\n T - Temperature\n Tz - eta\n e - num events\n p - PBC\n ki - kappai\n k - kappa\n";
+				std::cerr << " L - size \n m - mu\n t - delta time\n tM - time max\n g - gamma\n T - Temperature\n Tz - eta\n e - num events\n p - PBC\n ki - kappai\n k - kappa\n";
 				exit (8);
 		}
 		++argv;
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]){
 
 	//###data###data###data###data###data###data###data###data###data##
 	char output[80];
-	std::sprintf(output, "data/qthk%.0fq%.0fe%.0fl%d.dat", kappai, kappa, eta, Lsize);
+	std::sprintf(output, "data/temp.dat");//"data/qthk%.0fq%.0fe%.0fg%.0fl%d.dat", kappai, kappa, eta, dgamma, Lsize);
 	std::ofstream out_file(output, std::ios::out | std::ios::trunc);
 	out_file.precision(12);
 	std::cout.precision(16);
@@ -123,17 +125,41 @@ int main(int argc, char *argv[]){
 	//###time###Evolution###time###Evolution###time###Evolution##time##
 	int xx = int(Lsize/2 - Lsize/2/point) - 1;
 	int yy = int(Lsize/2 + Lsize/2/point) - 1;
+
+	out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << '\n';
+	/* CHECK
+	std::cout << KC.corr(3,4) << "   " << KC.fdist(Lsize-1) <<'\n';
+	mu = kappai * std::pow(Lsize, -YMU) + MUC;
+	KC.Quench_Temper(Temperature, mu);
+	std::cout << corr0(3,4) << "   " << corr0(Lsize-1, Lsize-1) << '\n';
+	KC.genCorrMatrix(0);
+	//KC.corr = corr0; KC.genCorrMatrix(dtime);
+	std::cout << KC.corr(3,4) << '\n';
+	exit(8);
+	*/
+
+	double Temper2 = 1. * std::pow(Lsize, -ZETA);
+	KC.Quench_Temper(0., mu);
 	for(int i=0; i<events; ++i){
 
-		if ( i % (events/20) == 0)
+		if ( i % (events/20) == 0 ){
 			out_file << std::flush;
+			std::cout << int(100. / events * i) << "%\n";
+		}
 
-		KC.RKmethod(dtime);
+		//KC.RKmethod(dtime);
+		//if ( i % (events/80) == 0 ){
+			//KC.genCorrMatrix(double(i+1)*dtime);
+			KC.pureThermTimeEvol(double(i+1)*dtime);
+			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*KC.Measure(xx,yy)(0) << "		" << double(Lsize)*KC.Measure(xx,yy)(1) << '\n';
 
-		double dens(0.);
-		for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
+			/*
+			double dens(0.);
+			for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
 
-		out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << "		" << dens << '\n';
+			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << "		" << dens << '\n';
+			*/
+		//}
 
 	}
 	//###time###Evolution###time###Evolution###time###Evolution##time##
