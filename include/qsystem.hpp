@@ -9,7 +9,7 @@ typedef std::complex<double> complex;
 /*#####################################################*/
 
 const double YMU = 1., ZETA = 1., MUC = -2.;
-double delta(1.), mu(MUC), dgamma(1.);
+double delta(1.), mu(MUC), dgamma(0.);
 
 /*#####################################################*/
 
