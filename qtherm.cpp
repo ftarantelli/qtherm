@@ -5,13 +5,13 @@
 int main(int argc, char *argv[]){
 
 	int Lsize(30);
-	double Temperature(1.*std::pow(Lsize, ZETA));
+	double Temperature(1.*std::pow(Lsize, -ZETA)), Tempb(0.);
 	double pbc(0.), tmax(5.*Lsize), dtime(0.02);
 
-	int point(2), events;
-	double kappai(0.), kappa(1.), eta(0.);
+	int point(2), range(1), events;
+	double kappai(0.), kappa(1.), eta(0.), etab(1.), sgamma(0.);
 
-	std::string lineterm= "";
+	std::string lineterm = "";
 	for (int i=1;i<argc;i++)
 		lineterm.append(std::string(argv[i]).append(" "));
 
@@ -29,14 +29,18 @@ int main(int argc, char *argv[]){
 					else					dtime = atof( &argv[1][1] );
 				break;
 			case 'g':
-					dgamma = atof( &argv[1][1]);
+					dgamma = atof( &argv[1][1] );
 				break;
 			case 'T':
-					if(argv[1][1] == 'z')	eta = atof( &argv[1][2] );
-					else			Temperature = atof( &argv[1][1]);
+					if(argv[1][1] == 'b')	Tempb = atof( &argv[1][2] );
+					else 				Temperature = atof( &argv[1][1]);
 				break;
 			case 'e':
-					eta = atof( &argv[1][1] );
+					if(argv[1][1] == 'b')	etab = atof( &argv[1][2] );
+					else					eta = atof( &argv[1][1] );
+				break;
+			case 'r':
+					range = atoi( &argv[1][1] );
 				break;
 			case 'p':
 					pbc = atof( &argv[1][1] );
@@ -48,9 +52,12 @@ int main(int argc, char *argv[]){
 					if(argv[1][1] == 'i')	kappai= atof( &argv[1][2] );
 					else					kappa = atof( &argv[1][1] );
 				break;
+			case 's':
+					sgamma = atof( &argv[1][1] );
+				break;
 			default:
 				std::cerr << "Unlucky: Retry input values\n";
-				std::cerr << " L - size \n m - mu\n t - delta time\n tM - time max\n g - gamma\n T - Temperature\n Tz - eta\n e - num events\n p - PBC\n ki - kappai\n k - kappa\n";
+				std::cerr << " L - size \n m - mu\n t - delta time\n tM - time max\n g - gamma\n T - Temperature\n Tb - Temp_bath\n e - eta = TL\n eb - eta_bath\n r - power of size time range\n p - PBC\n ki - kappai\n k - kappa\n s - scaling gamma\n";
 				exit (8);
 		}
 		++argv;
@@ -59,7 +66,15 @@ int main(int argc, char *argv[]){
 
 	//###data###data###data###data###data###data###data###data###data##
 	char output[80];
-	std::sprintf(output, "data/temp.dat");//"data/qthk%.0fq%.0fe%.0fg%.0fl%d.dat", kappai, kappa, eta, dgamma, Lsize);
+	//temp.dat"); //
+
+	if(sgamma != 0.)
+		std::sprintf(output, "data/q2thk%.0fq%.0fe%.2ft%.2fS%.3fl%d.dat", kappai, kappa, eta, etab, sgamma, Lsize);
+	else
+		std::sprintf(output, "data/q2thk%.0fq%.0fe%.2ft%.2fg%.3fl%d.dat", kappai, kappa, eta, etab, dgamma, Lsize);
+
+	//std::sprintf(output, "test.dat");
+
 	std::ofstream out_file(output, std::ios::out | std::ios::trunc);
 	out_file.precision(12);
 	std::cout.precision(16);
@@ -75,7 +90,7 @@ int main(int argc, char *argv[]){
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
 
 	//###initial##condition###initial##condition###initial##condition##
-	tmax = 5.*Lsize;
+	tmax = 5.*std::pow(Lsize, range);
 	events =  int(tmax/dtime);
 	//point = int(Lsize/point);
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
@@ -87,6 +102,8 @@ int main(int argc, char *argv[]){
 	KC.hamBuild();
 	KC.spectrum();
 	KC.corrMatrix();
+	double dens(0.);
+	for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
 
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
 	out_file << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
@@ -138,8 +155,9 @@ int main(int argc, char *argv[]){
 	exit(8);
 	*/
 
-	double Temper2 = 1. * std::pow(Lsize, -ZETA);
-	KC.Quench_Temper(0., mu);
+	if(etab != 0.)	Tempb = etab * std::pow(Lsize, -ZETA);
+	if(sgamma != 0.) dgamma = sgamma / double(Lsize);
+	KC.Quench_Temper(Tempb, mu);
 	for(int i=0; i<events; ++i){
 
 		if ( i % (events/20) == 0 ){
@@ -150,8 +168,9 @@ int main(int argc, char *argv[]){
 		//KC.RKmethod(dtime);
 		//if ( i % (events/80) == 0 ){
 			//KC.genCorrMatrix(double(i+1)*dtime);
+			dvec mmeas = KC.Measure(xx,yy);
 			KC.pureThermTimeEvol(double(i+1)*dtime);
-			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*KC.Measure(xx,yy)(0) << "		" << double(Lsize)*KC.Measure(xx,yy)(1) << '\n';
+			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*mmeas(0) << "		" << double(Lsize)*mmeas(1) << "		" << mmeas(2)-dens << '\n';
 
 			/*
 			double dens(0.);

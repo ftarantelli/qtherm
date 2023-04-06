@@ -10,7 +10,7 @@ dvec qsystem::Measure(const int& xx,const int& yy){
 	*/
 	int _xx = xx, _yy = yy;
 
-	dvec obss(2);
+	dvec obss(3);
 	complex obs(0.);
 
 	for(int m=0; m<L; ++m){
@@ -29,6 +29,17 @@ dvec qsystem::Measure(const int& xx,const int& yy){
 			obs = obs + ( conj(ham(m,_xx)) * conj(ham(q,_yy-L)) - conj(ham(m,_xx-L)) * conj(ham(q,_yy)) ) * corr(m,q) + conj(ham(m,_xx)) * conj(ham(q,_yy))*corr(m+L,q+L) + conj(ham(m,_xx-L))*conj(ham(q,_yy-L))*conj(corr(q+L,m+L));
 		}
 	obss(1) = 2. * real(obs);
+	obs = 0.;
+
+	for(int _xsite=0; _xsite<L; ++_xsite){
+		for(int m=0; m<L; ++m){
+			obs = obs + conj(ham(m,_xsite)) * ham(m,_xsite);
+			for(int q=0; q<L;++q)
+			obs = obs + ( conj(ham(m,_xsite+L))* ham(q,_xsite+L) - conj(ham(m,_xsite))*ham(q,_xsite) )*corr(m,q) + conj(ham(m,_xsite+L))*ham(q,_xsite)*corr(m+L,q+L) + conj(ham(m,_xsite))*ham(q,_xsite+L)*conj(corr(q+L,m+L));
+		}
+	}
+
+	obss(2) = real(obs);
 
 	return obss;
 }
