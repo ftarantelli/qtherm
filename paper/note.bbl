@@ -1,0 +1,24 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname bibnamefont\endcsname\relax
+  \def\bibnamefont#1{#1}\fi
+\expandafter\ifx\csname bibfnamefont\endcsname\relax
+  \def\bibfnamefont#1{#1}\fi
+\expandafter\ifx\csname citenamefont\endcsname\relax
+  \def\citenamefont#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{\citenamefont{Piccitto et~al.}(2022)\citenamefont{Piccitto, Campisi,
+  and Rossini}}]{P-2022-otto}
+\bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Piccitto}},
+  \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Campisi}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Rossini}},
+  \bibinfo{journal}{New Journal of Physics} \textbf{\bibinfo{volume}{24}},
+  \bibinfo{pages}{103023} (\bibinfo{year}{2022}),
+  \urlprefix\url{https://dx.doi.org/10.1088/1367-2630/ac963b}.
+
+\end{thebibliography}
