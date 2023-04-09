@@ -1,7 +1,6 @@
 #include "include/all.h"
 
 
-
 int main(int argc, char *argv[]){
 
 	int Lsize(30);
@@ -73,8 +72,9 @@ int main(int argc, char *argv[]){
 	else
 		std::sprintf(output, "data/q2thk%.0fq%.0fe%.2ft%.2fg%.3fl%d.dat", kappai, kappa, eta, etab, dgamma, Lsize);
 
-	//std::sprintf(output, "test.dat");
-
+	//std::sprintf(output, "0test.dat");
+//FILE * test;
+//test = fopen("test.dat", "wt");
 	std::ofstream out_file(output, std::ios::out | std::ios::trunc);
 	out_file.precision(12);
 	std::cout.precision(16);
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
 	int xx = int(Lsize/2 - Lsize/2/point) - 1;
 	int yy = int(Lsize/2 + Lsize/2/point) - 1;
 
-	out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << '\n';
+	out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)) << "		" << 0. << '\n';
 	/* CHECK
 	std::cout << KC.corr(3,4) << "   " << KC.fdist(Lsize-1) <<'\n';
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
@@ -158,7 +158,10 @@ int main(int argc, char *argv[]){
 	if(etab != 0.)	Tempb = etab * std::pow(Lsize, -ZETA);
 	if(sgamma != 0.) dgamma = sgamma / double(Lsize);
 	KC.Quench_Temper(Tempb, mu);
-	for(int i=0; i<events; ++i){
+	int i;
+	//#pragma omp parallel
+	//#pragma omp parallel for
+	for(i=0; i<events; ++i){
 
 		if ( i % (events/20) == 0 ){
 			out_file << std::flush;
@@ -168,9 +171,11 @@ int main(int argc, char *argv[]){
 		//KC.RKmethod(dtime);
 		//if ( i % (events/80) == 0 ){
 			//KC.genCorrMatrix(double(i+1)*dtime);
-			dvec mmeas = KC.Measure(xx,yy);
 			KC.pureThermTimeEvol(double(i+1)*dtime);
-			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*mmeas(0) << "		" << double(Lsize)*mmeas(1) << "		" << mmeas(2)-dens << '\n';
+
+			KC.Measure(xx,yy);
+			//fprintf(test, "%f	%f\n", KC.time/double(Lsize), double(Lsize)*KC.obs(0));
+			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*KC.obs(0) << "		" << double(Lsize)*KC.obs(1) << "		" << KC.obs(2)-dens << '\n';
 
 			/*
 			double dens(0.);
@@ -189,6 +194,6 @@ int main(int argc, char *argv[]){
 	std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 	run_log << output << " END with " << lineterm << "   " << std::ctime(&end_time) << std::flush;
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
-
+//fclose(test);
 	return(0);
 }

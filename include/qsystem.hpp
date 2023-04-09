@@ -21,6 +21,7 @@ public:
 	cx_dmat corr; //cx_dmat temp;
 	dvec omega, fdist;
 	complex energy;
+	dvec obs;
 	double PBC, time, Temper;
 
 	qsystem(int _L, double _pbc, double _Temper) {
@@ -34,6 +35,7 @@ public:
 		omega.set_size(L);
 		fdist.set_size(L);
 		energy = 0.;
+		obs.set_size(3);
 		time = 0.;
 	}
 
@@ -43,7 +45,7 @@ public:
 	void Quench_Temper(const double& _Temper, const double& _mu);
 	void pureThermTimeEvol(double ttime);
 	void genCorrMatrix(double ttime);
-	dvec Measure(const int& xx,const int& yy);
+	void Measure(const int& xx,const int& yy);
 	void derstep(const cx_dmat& _corr, cx_dmat& _k);
 	void RKmethod(double _dt);
 };

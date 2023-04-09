@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <complex>
 #include <math.h>
-
+#include <omp.h>
 
 
 #include "qsystem.hpp"
