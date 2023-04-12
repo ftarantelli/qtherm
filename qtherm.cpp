@@ -5,7 +5,7 @@ int main(int argc, char *argv[]){
 
 	int Lsize(30);
 	double Temperature(1.*std::pow(Lsize, -ZETA)), Tempb(0.);
-	double pbc(0.), tmax(5.*Lsize), dtime(0.02);
+	double pbc(0.), tmax(5.), dtime(0.02);
 
 	int point(2), range(1), events;
 	double kappai(0.), kappa(1.), eta(0.), etab(1.), sgamma(0.);
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 				break;
 			case 't':
 					if(argv[1][1] == 'M')	tmax = atof( &argv[1][2] );
-					else					dtime = atof( &argv[1][1] );
+					else			dtime = atof( &argv[1][1] );
 				break;
 			case 'g':
 					dgamma = atof( &argv[1][1] );
@@ -72,12 +72,14 @@ int main(int argc, char *argv[]){
 	else
 		std::sprintf(output, "data/q2thk%.0fq%.0fe%.2ft%.2fg%.3fl%d.dat", kappai, kappa, eta, etab, dgamma, Lsize);
 
-	//std::sprintf(output, "0test.dat");
-//FILE * test;
-//test = fopen("test.dat", "wt");
-	std::ofstream out_file(output, std::ios::out | std::ios::trunc);
-	out_file.precision(12);
-	std::cout.precision(16);
+	//std::sprintf(output, "test.dat");
+	FILE * test;
+	test = fopen(output , "wt");
+
+	//std::ofstream out_file(output, std::ios::out | std::ios::trunc);
+	//out_file.precision(12);
+	//std::cout.precision(16);
+
 	//###data###data###data###data###data###data###data###data###data##
 
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]){
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
 
 	//###initial##condition###initial##condition###initial##condition##
-	tmax = 5.*std::pow(Lsize, range);
+	tmax = tmax*double(std::pow(Lsize, range));
 	events =  int(tmax/dtime);
 	//point = int(Lsize/point);
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
@@ -106,8 +108,10 @@ int main(int argc, char *argv[]){
 	for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
 
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
-	out_file << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
-	out_file << "# t/L		LC(x,y)		LP(x,y)		D" << "\n";
+	//out_file << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
+	//out_file << "# t/L		LC(x,y)		LP(x,y)		D-D(0)" << "\n";
+
+	fprintf(test, "# %s# T = %.9f		mu = %.9f		ypoint = %d		dtime = %.9f	L = %d		comm_line = %s\n# t/L		LC(x,y)		LP(x,y)		D-D(0)\n", std::ctime(&start_time), Temperature, mu, point, dtime, Lsize, lineterm.c_str());
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
 
 	//###quench###quench###quench###quench###quench###quench###quench##
@@ -143,7 +147,9 @@ int main(int argc, char *argv[]){
 	int xx = int(Lsize/2 - Lsize/2/point) - 1;
 	int yy = int(Lsize/2 + Lsize/2/point) - 1;
 
-	out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)) << "		" << 0. << '\n';
+	//out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)) << "		" << 0. << '\n';
+	fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", KC.time/double(Lsize), double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)), 2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)), 0.);
+
 	/* CHECK
 	std::cout << KC.corr(3,4) << "   " << KC.fdist(Lsize-1) <<'\n';
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
@@ -158,24 +164,25 @@ int main(int argc, char *argv[]){
 	if(etab != 0.)	Tempb = etab * std::pow(Lsize, -ZETA);
 	if(sgamma != 0.) dgamma = sgamma / double(Lsize);
 	KC.Quench_Temper(Tempb, mu);
-	int i;
+
 	//#pragma omp parallel
-	//#pragma omp parallel for
-	for(i=0; i<events; ++i){
+	#pragma omp parallel for
+	for(int i=0; i<events; ++i){
 
-		if ( i % (events/20) == 0 ){
-			out_file << std::flush;
-			std::cout << int(100. / events * i) << "%\n";
+		if ( i % (events/10) == 0 ){
+			//out_file << std::flush;
+			std::cout << int(100. / events * i) << "%	" << lineterm << "	" << output << "\n";
 		}
-
+			cx_dmat _corr_(2*Lsize, 2*Lsize);
+			dvec obs(3);
 		//KC.RKmethod(dtime);
 		//if ( i % (events/80) == 0 ){
 			//KC.genCorrMatrix(double(i+1)*dtime);
-			KC.pureThermTimeEvol(double(i+1)*dtime);
+			KC.pureThermTimeEvol(double(i+1)*dtime, _corr_);
 
-			KC.Measure(xx,yy);
-			//fprintf(test, "%f	%f\n", KC.time/double(Lsize), double(Lsize)*KC.obs(0));
-			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*KC.obs(0) << "		" << double(Lsize)*KC.obs(1) << "		" << KC.obs(2)-dens << '\n';
+			KC.Measure(xx,yy, _corr_, obs);
+			fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", double(i+1)*dtime/double(Lsize), double(Lsize)*obs(0), double(Lsize)*obs(1), obs(2)-dens);
+			//out_file << double(i+1)*dtime/double(Lsize) << "		" << double(Lsize)*obs(0) << "		" << double(Lsize)*obs(1) << "		" << obs(2)-dens << '\n';
 
 			/*
 			double dens(0.);
@@ -194,6 +201,7 @@ int main(int argc, char *argv[]){
 	std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 	run_log << output << " END with " << lineterm << "   " << std::ctime(&end_time) << std::flush;
 	//###chrono###chrono###chrono###chrono###chrono###chrono###chrono##
-//fclose(test);
+
+	fclose(test);
 	return(0);
 }

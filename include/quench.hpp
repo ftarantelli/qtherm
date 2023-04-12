@@ -63,7 +63,7 @@ void qsystem::Quench_Temper(const double& _Temper, const double& _mu){
 }
 
 
-void qsystem::pureThermTimeEvol(double ttime){
+void qsystem::pureThermTimeEvol(double ttime, cx_dmat& _corr){
 	/*
 	 * compute the time evolution in the Bogoliubov base
 	 * for pure dissipation dynamics with
@@ -72,14 +72,14 @@ void qsystem::pureThermTimeEvol(double ttime){
 	*/
 
 	time = ttime;
-	//ATTENTION: corr = Bogoliubov correlations;
+	//ATTENTION: _corr = Bogoliubov correlations;
 	for(int kk=0; kk<L; ++kk){
-		corr(kk,kk) = fdist(kk)*(1-exp(-2.*dgamma*ttime)) + corr0(kk,kk)*exp(-2.*dgamma*ttime);
+		_corr(kk,kk) = fdist(kk)*(1-exp(-2.*dgamma*ttime)) + corr0(kk,kk)*exp(-2.*dgamma*ttime);
 		for(int qq=kk+1; qq<L; ++qq){
-			corr(kk, qq) = corr0(kk,qq) * exp(complex(0.,1.)*(omega(qq)-omega(kk))*ttime - 2.*dgamma*ttime);
-			corr(qq, kk) = conj(corr(kk,qq));
-			corr(kk+L,qq+L) = corr0(kk+L,qq+L) * exp(complex(0.,-1.)*(omega(qq)+omega(kk))*ttime - 2.*dgamma*ttime );
-			corr(qq+L,kk+L) = - corr(kk+L,qq+L);
+			_corr(kk, qq) = corr0(kk,qq) * exp(complex(0.,1.)*(omega(qq)-omega(kk))*ttime - 2.*dgamma*ttime);
+			_corr(qq, kk) = conj(_corr(kk,qq));
+			_corr(kk+L,qq+L) = corr0(kk+L,qq+L) * exp(complex(0.,-1.)*(omega(qq)+omega(kk))*ttime - 2.*dgamma*ttime );
+			_corr(qq+L,kk+L) = - _corr(kk+L,qq+L);
 		}
 	}
 }
@@ -90,7 +90,7 @@ void qsystem::genCorrMatrix(double ttime){
 	 * Bogoliubov base to the coordinate base
 	*/
 
-	pureThermTimeEvol(ttime);
+	pureThermTimeEvol(ttime, corr);
 	cx_dmat temp(2*L,2*L);
 	temp.zeros();
 	// correlations c^\dagger_j c_i

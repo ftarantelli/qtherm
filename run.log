@@ -1,0 +1,5 @@
+data/q2thk1q-1e0.10t1.00g0.000l90.dat END with e0.1 eb1 p0 ki1 k-1 y3 g0. L90 t0.3    Tue Apr 11 23:05:39 2023
+data/q2thk1q-1e0.10t1.00g0.001l90.dat END with e0.1 eb1 p0 ki1 k-1 y3 g0.001 L90 t0.3    Tue Apr 11 23:07:54 2023
+data/q2thk1q-1e0.10t1.00g0.010l90.dat END with e0.1 eb1 p0 ki1 k-1 y3 g0.01 L90 t0.3    Tue Apr 11 23:08:45 2023
+data/q2thk1q-1e0.10t1.00g0.100l90.dat END with e0.1 eb1 p0 ki1 k-1 y3 g0.1 L90 t0.3    Tue Apr 11 23:08:51 2023
+data/q2thk1q-1e0.10t1.00g1.000l90.dat END with e0.1 eb1 p0 ki1 k-1 y3 g1 L90 t0.3    Tue Apr 11 23:09:06 2023
