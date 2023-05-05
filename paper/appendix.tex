@@ -1,0 +1,276 @@
+\documentclass[pra,twocolumn,preprintnumbers,amsmath,amssymb,nofootinbib,floatfix,longbibliography]{revtex4}
+
+\usepackage{graphicx, bm, tikz, braket, mathrsfs, comment}
+\usepackage[breaklinks]{hyperref}
+\usepackage{gensymb} %\degree
+
+\makeatletter
+
+\def\graphicscale{\twocolumn@sw{0.3}{0.4}}
+\def\graphicthreescale{\twocolumn@sw{0.3}{0.4}}
+\newcommand{\rev}[1]{\textcolor{red}{#1}}
+
+\begin{document}
+
+\title{APPENDIX}
+
+\author{}
+\affiliation{}
+
+%\date{}
+
+\begin{abstract}
+\end{abstract}
+\maketitle
+
+\appendix
+
+\section{Implementation Algorithm}
+
+In the following, we will provide the details of the
+computational method used to simulated the quantum system.
+It can be split in three different macro-area: the initial
+Gibbs state, the unitary dynamics and the general thermal
+dissipation dynamics.
+
+\subsection{Initial Gibbs State}
+
+As the first point of the protocol says, our quantum system
+starts from the Gibbs thermal state associated with the
+initial temperature $T_i$. The Gibbs density matrix
+operator in this case, is expressed as:
+\begin{align}
+	\label{Gibbs}
+	\hat \rho_i  = \frac{1}{\cal Z} \,\,&
+	e^{-\beta_i \hat H_K(\mu)} \,\,,\\
+    {\cal Z} =
+	{\rm Tr} \,\,e^{-\beta_i \hat H_K(\mu)} \,\,, & \qquad
+	\beta_i  = \frac{1}{T_i} \,\,.
+\end{align}
+To extract the correlation functions from this initial
+condition, we apply a Bogoliubov transformation on the
+Kitaev Hamiltonian $\hat H_K(\mu)$:
+\begin{equation}
+	\label{HKdiag}
+	H_K(\mu)=\sum _{j=1}^L\,\omega _j \,\hat b^\dagger _j\,
+	\hat b_j+ \frac{1}{2}\,\Bigr[ -2L\mu - \sum _{r=1}^L
+	\omega _r \Bigr] \,\,;
+\end{equation}
+where the $\omega_k$ is the spectrum of the Bogoliubov
+fermion eigenoperators $\hat b_k$. The relations, which
+connect the previous basis with the Bogoliubov one, can be
+written as:
+\begin{equation}
+  \label{transBogol}
+  \hat c_x = \sum_{k=1}^L A_{xk} b_k + B_{xk} b^\dagger_k
+  \,\,,
+\end{equation}
+where $A$ and $B$ are matrices associated with the basis
+change. This is a simply linear transformation which pass
+from the Bogoliubov operator space to the site operator one.\\
+
+  We can assume the quasi-particles associated with $b_k$
+  as a free fermion gas in which the partition function is:
+  \begin{equation}
+    \label{Partition}
+    {\cal Z} = {\rm Tr} \,\, e^{-\beta_i
+      \sum_j \omega _j \,\hat b^\dagger _j\, \hat b_j}\,\,;
+  \end{equation}
+  less than constant terms.\\
+  In this state, the
+  correlation functions $\braket{b^\dagger_k b_k}$
+  can be derived by the following relations:
+  \begin{align}
+    \label{Zcorr}
+    \braket{b^\dagger_k b_k} =
+    {\rm Tr} \Biggr[ \frac{b^\dagger_k b_k}
+                    {\cal Z}e^{-\beta_i \hat H_K} \Biggr]
+    = -\frac{1}{\beta_i}\partial_{\omega_k}\ln{\cal Z}\,\,;
+  \end{align}
+  where we use that the Gibbs state is equal to
+  $\hat \rho = e^{-\beta_i\hat H_K(\mu)}/{\cal Z}$. To
+  compute the ${\cal Z}$ function, we consider all the
+  basis vector in the Hilbert space associated with the
+  free quasi-particle fermions. In this way:
+  \begin{equation}
+    {\cal Z} = \prod _{j=1}^L
+    \Bigl( 1 + e^{-\beta_i \omega_j} \Bigl) \,\,;
+  \end{equation}
+  and from Eq. (\ref{Zcorr}):
+  \begin{align}
+    \braket{b^\dagger_k b_k}= &
+    -\frac{1}{\beta_i}\partial_{\omega_k} \sum _{j=1}^L
+    \ln\Bigl( 1 + e^{-\beta_i \omega_j} \Bigl)= \\
+    = &  \frac{e^{-\beta_i \omega_k}}
+            { 1 + e^{-\beta_i \omega_k} } =
+    \frac{1}{1 + e^{\beta_i \omega_k}}
+    \,\,;
+  \end{align}
+  where $f(\omega_k) = 1 / (1 + e^{\beta_i \omega_k})$ is
+  the statistical Fermi-Dirac distribution function. The
+  non-diagonal terms $\braket{b^\dagger_q b_k}$ of the
+  Bogoliubov correlation functions are all equal to zero,
+  since $H_K$ is diagonal in the basis $\{\hat b_k\}$.\\
+
+Finally, to evaluate the correlation function $C(x,y)$ and
+$P(x,y)$, we use the Eq. (\ref{transBogol}) in the
+definition of the previous 2-points functions and we
+achive:
+\begin{align}
+  \label{initcorr}
+   C(x,y) = \sum_{k,q=1}^L
+  A^*_{xk}A_{yq} \braket{b^\dagger_k b_q}
+  + B^*_{xk} B_{yq} \braket{b_k b^\dagger_q} + \notag\\
+  A^*_{xk} B_{yq} \braket{b^\dagger_k b^\dagger_q} +
+  B^*_{xk} A_{yq} \braket{b_k b_q}
+  \,\,;
+\end{align}
+and a similar relation for $P(x,y)$.
+
+\subsection{Unitary Dynamics}
+
+Starting from the Gibbs state introduced above, at $t=0$,
+we perform a quench protocol on the Kitaev Hamiltonian,
+from an initial value $\mu = \mu_i$ to a final one $\mu =
+\mu_f$. This process lead to a reformulation of the
+Bogoliubov bases in which the time evolution operator
+acts.\\This operator is unitary because the state is not in
+contact with any thermal bath. The correlation functions
+are achieved from the solution, in the Heisenberg picture,
+of:
+\begin{align}
+   \label{EQUnitary}
+   \frac{d O_{H}(t) }{d t}  &= i\,\Bigr[\hat H,
+      O_{H}(t) \Bigr] ;\\
+    %O_H &= \Bigl(c^\dagger_x c_y\Bigl)_H\,\,.
+\end{align}
+where the initial condition are given by Eq.
+(\ref{initcorr}).\\
+We substitute the variable $O_{H}$ with the operators
+associated with these three observable:
+\begin{align}
+C(x,y,t) & =  2\,{\rm Re}\Bigr[
+\,{\mathscr{C}_{x,y}}(t) \,\Bigr]        \,\,, \\
+P(x,y,t) & = 2\,{\rm Re}\Bigr[
+\,{\mathscr{P}_{x,y}}(t) \Bigr]   \,\,,\\
+D(t) & = \sum_x \mathscr{C}_{x,x} \,\,.
+\end{align}
+where we have defined the following auxiliary
+variables $\mathscr{C}$ and $\mathscr{P}$:
+\begin{align}
+  \label{RedCorr}
+  \mathscr{C}_{x,y} &= {\rm Tr}\Bigr[\rho \hat c^\dagger_x
+    \hat c_y\Bigr]\,\,,\\
+  \mathscr{P}_{x,y} &= {\rm Tr}\Bigr[\rho \hat c^\dagger_x
+    \hat c^\dagger_y\Bigr]\,\,.
+\end{align}
+Resolving the Eq. (\ref{EQUnitary}) for this observable,
+their time-evolution can be expressed in the following
+way~\cite{TV21}:
+\begin{align}
+\frac{d\mathscr{C}_{x,y}}{dt}& =
+i\,\bigr[\mathscr{C}_{x,y+1} - \mathscr{C}_{x-1,y} +
+\mathscr{C}_{x,y-1} - \mathscr{C}_{x+1,y} \bigr] - \notag\\
+-i\, \Bigl(& \mathscr{P}_{y,x-1}^\dagger -
+\mathscr{P}_{y,x+1}^\dagger \Bigl)  + i\, \Bigl(
+\mathscr{P}_{x,y-1} - \mathscr{P}_{x,y+1} \Bigl) \,\,, \\
+\frac{d\mathscr{P}_{x,y}}{dt} &=
+-i\,\bigr[\mathscr{P}_{x,y+1} + \mathscr{P}_{x+1,y}+
+\mathscr{P}_{x,y-1} + \mathscr{P}_{x-1,y} \bigr] - \notag\\
+&- 2\,i\,\mu_f  \,\mathscr{P}_{x,y}-i\,\Bigl(
+\delta _{x-1,\,y} - \delta _{x+1,\,y} \Bigl) - \notag \\
+ &- i\, \Bigl( \mathscr{C}_{x,y-1} -
+\mathscr{C}_{y,x-1} - \mathscr{C}_{x,y+1}
++ \mathscr{C}_{y,x+1} \Bigl) \,\,.
+\end{align}
+The initial condition on $\mathscr{C}_{x,y}$ and
+$\mathscr{P}_{x,y}$ is obtained by the relations
+(\ref{transBogol}) and (\ref{RedCorr}), where the
+Bogoliubov correlations are associated with the initial
+Gibbs state.
+
+\subsection{Thermal Dissipation Dynamics}
+
+Now, in the case in which we turn on a homogeneous thermal
+dissipation mechanism, the time evolution is not more
+unitary, but it is the interplay between two processes:
+\begin{itemize}
+  \item the Quench protocol;
+  \item the dissipation arising from equal thermal baths
+  with temperature $T_b$.
+  In this case, each system site is coupled with uniform
+  and identical thermal baths with temperature $T_b$; using
+  the Born-Markov and secular approximation, the time
+  derivative of the density matrix $\rho$ obeys to the
+  Lindblad master equation~\cite{BP07}.
+\end{itemize}
+In this general case, the time-evolution equation of the
+operators $O_H$ in the Heisenberg picture presents an
+additional dissipation term. In details, the thermalization
+process of $O_H(t)$ is obtained by the resolution of the
+following master equation~\cite{PCD22, DR21}:
+\begin{align}
+   \label{EQLindblad}
+   \frac{d O_{H}(t) }{d t}  &= i\,\Bigr[\hat H,
+      O_{H}(t) \Bigr] + \mathbb{D}[O_{H}(t)]\,\,,\\
+  \mathbb{D}[O_H(t)] =
+  \,\,\gamma \sum _k &
+  f(\omega_k)\,\biggr[2\hat b_{k}^\dagger O_H(t)\hat b_{k}-
+  \Bigl\{ O_H(t), \, \hat b_{k} \hat b_{k}^\dagger \Bigl\}
+  \biggr]  + \notag\\
+  +\gamma \sum_k  (1-f(\omega_k)) &
+  \,\biggr[ 2\hat b_{k} O_H(t) \hat b_{k}^\dagger - \Bigl\{
+  O_H(t), \, \hat b_{k}^\dagger \hat b_{k} \Bigl\} \biggr]
+  \,\,.
+\end{align}
+The initial state, as in the previous case, is the Gibbs
+state in thermal equilibrium at the initial temperature
+$T_i$. This state corresponds with the steady state
+solution of the Eq. (\ref{EQLindblad}) with fixed
+$H(\mu_i)$. Then, the change of the chemical potential to
+$\mu_f$ with a different Hamiltonian leads to a
+redefinition of the Bogoliubov operators. We call
+$\{b'_k\}$ the operators which diagonalizes $H(\mu_f)$:
+\begin{equation}
+  \label{quenchHdiag}
+  H(\mu_f)=\sum _{k=1}^L\,\omega'_k \,\hat b'^\dagger _k\,
+  \hat b'_k+ \frac{1}{2}\,\Bigr[ -2L\mu_f - \sum _{r=1}^L
+  \omega'_r \Bigr] \,\,;
+\end{equation}
+where $\{\omega'_k\}$ is the new Bogoliubov spectrum
+associated with $H(\mu_f)$.\\
+To evaluate the Bogoliubov correlations in this new base
+$\{b'_k\}$, we resolve the Eq. (\ref{EQLindblad}) in the
+operators $\{b'_k\}$:
+\begin{align}
+  \label{EQLindbladprime}
+  \braket{b'^\dagger_k b'_k}(t) =& f(\omega'_k) \,
+  \Bigr[ 1 - \exp\Bigl( -2 \gamma t \Bigl) \Bigr]+ \notag\\
+    & + \braket{b'^\dagger_k b'_k}_0
+    \exp\Bigl( -2 \gamma t \Bigl) \,\,;\\
+  \braket{b'^\dagger_k b'_q}(t) =&
+  \braket{b'^\dagger_k b'_q}_0
+  \exp\Bigl( i(\omega'_k - \omega'_q)t-2 \gamma t \Bigl)
+  \,\,;\\
+  \braket{b'^\dagger_k b'^\dagger_q}(t) =&
+  \braket{b'^\dagger_k b'^\dagger_q}_0
+  \exp\Bigl( i(\omega'_k + \omega'_q)t-2 \gamma t \Bigl)
+  \,\,;\\
+  \braket{b'_k b'_q}(t) =&
+  \braket{b'_k b'_q}_0
+  \exp\Bigl( -i(\omega'_k + \omega'_q)t-2 \gamma t \Bigl)
+  \,\,;\\
+\end{align}
+The initial values $\braket{b'^\dagger_k b'_q}_0$ of the
+correlations is computed on the initial Gibbs state and
+it is given by changing the base from
+$\{b_k \}$ to $\{b'_k\}$.
+
+Finally, we use at each step the relations
+(\ref{initcorr}) to pass from the Bogoliubov operator to
+the correlation functions $C(x,y)$ and $P(x,y)$.
+
+\bibliography{refs.bib}
+
+
+\end{document}
