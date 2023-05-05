@@ -68,13 +68,13 @@ int main(int argc, char *argv[]){
 	//temp.dat"); //
 
 	if(sgamma != 0.)
-		std::sprintf(output, "data/q3thk%.0fq%.0fe%.2ft%.2fS%.3fl%d.dat", kappai, kappa, eta, etab, sgamma, Lsize);
+		std::sprintf(output, "data/eqk%.0fl%d.dat", kappai, Lsize);
 	else
-		std::sprintf(output, "data/q3thk%.0fq%.0fe%.2ft%.2fg%.3fl%d.dat", kappai, kappa, eta, etab, dgamma, Lsize);
+		std::sprintf(output, "data/eqk%.0fl%d.dat", kappai, Lsize);
 
 	//std::sprintf(output, "test.dat");
 	FILE * test;
-	test = fopen(output , "wt");
+	test = fopen(output, "wt");
 
 	//std::ofstream out_file(output, std::ios::out | std::ios::trunc);
 	//out_file.precision(12);
@@ -102,62 +102,24 @@ int main(int argc, char *argv[]){
 	Eq.hamBuild();
 	Eq.spectrum();
 	Eq.corrMatrix();
-	double dens(0.);
+	double dens(0.), etav(eta);
 	for(int j=0; j<Lsize; ++j) dens += real(Eq.corr(j,j));
+	std::cout << dens/double(Lsize) << '\n';
 	//##critical#value##of##the#density#operator###########
 	mu = kappai * std::pow(Lsize, -YMU) + MUC;
 	//###initial##condition###initial##condition###initial##condition##
 
-	class qsystem KC(Lsize, pbc, Temperature);
-
-	KC.hamBuild();
-	KC.spectrum();
-	KC.corrMatrix();
-	double dens0(0.);
-	for(int j=0; j<Lsize; ++j) dens0 += real(KC.corr(j,j));
+	int xx = int(Lsize/2 - Lsize/2/point) - 1;
+	int yy = int(Lsize/2 + Lsize/2/point) - 1;
 
 	//###Parameters###Parameters###Parameters###Parameters##Parameters#
 	//out_file << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
 	//out_file << "# t/L		LC(x,y)		LP(x,y)		D-D(0)" << "\n";
 
-	fprintf(test, "# %s# T = %.9f		mu = %.9f		ypoint = %d		dtime = %.9f	L = %d		comm_line = %s\n# t/L		LC(x,y)		LP(x,y)		D-D(0)\n", std::ctime(&start_time), Temperature, mu, point, dtime, Lsize, lineterm.c_str());
-	//###Parameters###Parameters###Parameters###Parameters##Parameters#
+	fprintf(test, "# %s# T = %.9f		mu = %.9f		ypoint = %d		dtime = %.9f	L = %d		comm_line = %s\n# eta		LC(x,y)		LP(x,y)		D-D(0)\n", std::ctime(&start_time), Temperature, mu, point, dtime, Lsize, lineterm.c_str());
 
-	//###quench###quench###quench###quench###quench###quench###quench##
-	mu = kappa * std::pow(Lsize, -YMU) + MUC;
-	//###quench###quench###quench###quench###quench###quench###quench##
 
-/*
-	// * EQUILIBRIUM SCALING
-	//##equilibrium##equilibrium##equilibrium##equilibrium#equilibrium#
-	std::cout << "#		T = " << Temperature << "		mu = " << mu << "		ypoint = " << point << "		dtime = " << dtime << "		L = " << Lsize << "		comm_line = " << lineterm <<'\n';
-	std::cout << "# L	k	eta	LC(x,y)		LP(x,y)		1-2D/L" << "\n";
-	for(int hindex=0; hindex<100; ++hindex){
-
-		if ( hindex % (100/20) == 0)
-			std::cout << std::flush;
-		mu = (kappa + hindex*0.2 )/ std::pow(Lsize, YMU) + MUC;
-
-		class qsystem KC(Lsize, pbc, Temperature);
-
-		KC.hamBuild();
-		KC.spectrum();
-		KC.corrMatrix();
-
-		double dens(0.);
-		for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
-
-		std::cout << Lsize << "	" << kappa + hindex*0.2 << "	" << eta << "	" << real(double(Lsize)*(KC.corr(0, point) + KC.corr(point, 0))) << "		" << double(Lsize)*2.*real(KC.corr(point+Lsize, 0+Lsize)) << "		" << 1-2*dens/double(Lsize) << '\n';
-	}
-	//##equilibrium##equilibrium##equilibrium##equilibrium#equilibrium#
-*/
-
-	//###time###Evolution###time###Evolution###time###Evolution##time##
-	int xx = int(Lsize/2 - Lsize/2/point) - 1;
-	int yy = int(Lsize/2 + Lsize/2/point) - 1;
-
-	//out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)) << "		" << 0. << '\n';
-	fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", KC.time/double(Lsize), double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)), 2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)), dens0 - dens);
+	fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", 0., double(Lsize)*real(Eq.corr(xx, yy) + Eq.corr(yy, xx)), 2.*double(Lsize)*real(Eq.corr(xx+Lsize, yy+Lsize)), 0.);
 
 	/* CHECK
 	std::cout << KC.corr(3,4) << "   " << KC.fdist(Lsize-1) <<'\n';
@@ -170,36 +132,32 @@ int main(int argc, char *argv[]){
 	exit(8);
 	*/
 
-	if(etab != 0.)	Tempb = etab * std::pow(Lsize, -ZETA);
-	if(sgamma != 0.) dgamma = sgamma / double(Lsize);
-	KC.Quench_Temper(Tempb, mu);
+	class qsystem KC(Lsize, pbc, Temperature);
+
+	//cx_dmat _corr_(2*Lsize, 2*Lsize);
+	//dvec obs(3);
+
+	KC.hamBuild();
+	KC.spectrum();
 
 	//#pragma omp parallel
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for(int i=0; i<events; ++i){
 
 		if ( i % (events/10) == 0 ){
 			//out_file << std::flush;
 			std::cout << int(100. / events * i) << "%	" << lineterm << "	" << output << "\n";
 		}
-			cx_dmat _corr_(2*Lsize, 2*Lsize);
-			dvec obs(3);
-		//KC.RKmethod(dtime);
-		//if ( i % (events/80) == 0 ){
-			//KC.genCorrMatrix(double(i+1)*dtime);
-			KC.pureThermTimeEvol(double(i+1)*dtime, _corr_);
 
-			KC.Measure(xx,yy, _corr_, obs);
-			fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", double(i+1)*dtime/double(Lsize), double(Lsize)*obs(0), double(Lsize)*obs(1), obs(2)-dens);
-			//out_file << double(i+1)*dtime/double(Lsize) << "		" << double(Lsize)*obs(0) << "		" << double(Lsize)*obs(1) << "		" << obs(2)-dens << '\n';
+		etav = eta*double(i+1)/double(events);
+		KC.Temper = etav * std::pow(Lsize, -ZETA);
 
-			/*
-			double dens(0.);
-			for(int j=0; j<Lsize; ++j) dens += real(KC.corr(j,j));
+		KC.corrMatrix();
+		double dens0(0.);
+		for(int j=0; j<Lsize; ++j) dens0 += real(KC.corr(j,j));
+		//KC.Measure(xx,yy, _corr_, obs);
 
-			out_file << KC.time/double(Lsize) << "		" << double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)) << "		" <<  2.*double(Lsize)*real(KC.corr(yy+Lsize, xx+Lsize)) << "		" << dens << '\n';
-			*/
-		//}
+		fprintf(test, "%.9f	%.9f	%.9f	%.9f\n", etav, double(Lsize)*real(KC.corr(xx, yy) + KC.corr(yy, xx)), 2.*double(Lsize)*real(KC.corr(xx+Lsize, yy+Lsize)), dens0 -dens);
 
 	}
 	//###time###Evolution###time###Evolution###time###Evolution##time##
