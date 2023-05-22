@@ -39,7 +39,7 @@ set label font "Arial,30"
 set xlabel "{/Symbol m - m}_c L^{y_m}" offset 0, 0.8
 set xlabel "t" offset 0, 0.3
 set ylabel "C(x, y)" offset 2.4, -0.2
-set ylabel "n_s - n_{s, asym}" offset 1.6, 0
+set ylabel "n_s - n_{s, eq}(T)" offset 1.8, 0
 
 namef = "*l"
 

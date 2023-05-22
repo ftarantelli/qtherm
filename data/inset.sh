@@ -1,7 +1,7 @@
-for script in q3thk-1q0e1.00t0.50g0.000l*
+for script in q3thk-1q0e1.00t1.00S10.000l*
 do
 	num=$(wc -l < $script)
-	num=$(echo "${num}*1/6+4" | bc -l)
+	num=$(echo "${num}*1/20+4" | bc -l)
 	num=${num%.*}
 	size=${script##*l}
 	size=${size%%.dat}
